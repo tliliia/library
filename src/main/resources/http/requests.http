@@ -1,0 +1,21 @@
+GET localhost/books
+
+###
+
+POST localhost/books
+Content-Type: application/json
+
+{
+  "title": "Гарри Поттер и философский камень",
+  "author": "Д.Роулинг",
+  "description": "Серия для детей о молодом волшебнике Гарри",
+  "booksAmount" : 1
+}
+
+###
+
+GET localhost/books/search?q=Гарри
+
+###
+
+GET localhost/app/test

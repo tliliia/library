@@ -6,9 +6,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import ru.maxima.demo.exceptions.ProductNotAvailableException;
 import ru.maxima.demo.exceptions.ProductNotFoundException;
-import ru.maxima.demo.mapper.ProductDto;
-import ru.maxima.demo.mapper.pagedDto.ProductPage;
+import ru.maxima.demo.dto.ProductDto;
+import ru.maxima.demo.dto.pagedDto.ProductPage;
 import ru.maxima.demo.model.Product;
 import ru.maxima.demo.repository.ProductRepository;
 import ru.maxima.demo.service.ProductService;
@@ -32,6 +33,30 @@ public class ProductServiceImpl implements ProductService {
         productRepository.save(product);
 
         return ProductDto.from(product);
+    }
+
+    @Override
+    public ProductDto reduceAvailableAmount(Long productId) {
+        Product entityToUpdate = productRepository.getReferenceById(productId);
+        if (entityToUpdate == null) {
+            throw new ProductNotFoundException();
+        }
+        if (entityToUpdate.getAvailableAmount() <= 0) {//synchronized
+            throw new ProductNotAvailableException();
+        } else {
+            entityToUpdate.setAmount(entityToUpdate.getAvailableAmount() - 1);//synchronized
+
+            Product updated = productRepository.saveAndFlush(entityToUpdate);
+            return ProductDto.from(updated);
+        }
+    }
+
+    @Override
+    public ProductDto enlargeAvailableAmount(Long productId) {
+        Product entityToUpdate = productRepository.getReferenceById(productId);
+        entityToUpdate.setAmount(entityToUpdate.getAvailableAmount() + 1);//synchronized
+        Product updated = productRepository.saveAndFlush(entityToUpdate);
+        return ProductDto.from(updated);
     }
 
     @Override

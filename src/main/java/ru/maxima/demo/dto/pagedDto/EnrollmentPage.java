@@ -1,10 +1,11 @@
-package ru.maxima.demo.mapper.pagedDto;
+package ru.maxima.demo.dto.pagedDto;
+
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.maxima.demo.mapper.ProductDto;
+import ru.maxima.demo.dto.EnrollmentDto;
 
 import java.util.List;
 
@@ -12,9 +13,9 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ProductPage {
+public class EnrollmentPage {
     private Integer pageSize;
     private Integer totalPage;
 
-    private List<ProductDto> data;
+    private List<EnrollmentDto> data;
 }

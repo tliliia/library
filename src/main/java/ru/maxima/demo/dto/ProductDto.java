@@ -1,4 +1,4 @@
-package ru.maxima.demo.mapper;
+package ru.maxima.demo.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 @Builder
 public class ProductDto {
 
+    private Long id;
     private String title;
     private String description;
     private Integer amount;
@@ -22,6 +23,7 @@ public class ProductDto {
 
     public static ProductDto from(Product entity) {
         return ProductDto.builder()
+                .id(entity.getId())
                 .title(entity.getTitle())
                 .description(entity.getDescription())
                 .amount(entity.getAmount())
