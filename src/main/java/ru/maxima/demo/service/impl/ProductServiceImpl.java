@@ -44,9 +44,9 @@ public class ProductServiceImpl implements ProductService {
         if (entityToUpdate.getAvailableAmount() <= 0) {//synchronized
             throw new ProductNotAvailableException();
         } else {
-            entityToUpdate.setAmount(entityToUpdate.getAvailableAmount() - 1);//synchronized
+            entityToUpdate.setAvailableAmount(entityToUpdate.getAvailableAmount() - 1);//synchronized
 
-            Product updated = productRepository.saveAndFlush(entityToUpdate);
+            Product updated = productRepository.save(entityToUpdate);
             return ProductDto.from(updated);
         }
     }
@@ -54,8 +54,8 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDto enlargeAvailableAmount(Long productId) {
         Product entityToUpdate = productRepository.getReferenceById(productId);
-        entityToUpdate.setAmount(entityToUpdate.getAvailableAmount() + 1);//synchronized
-        Product updated = productRepository.saveAndFlush(entityToUpdate);
+        entityToUpdate.setAvailableAmount(entityToUpdate.getAvailableAmount() + 1);//synchronized
+        Product updated = productRepository.save(entityToUpdate);
         return ProductDto.from(updated);
     }
 

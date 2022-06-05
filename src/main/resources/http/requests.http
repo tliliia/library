@@ -18,4 +18,4 @@ GET localhost/books/search?q=Гарри
 
 ###
 
-GET localhost/app/test
+GET localhost/history/test

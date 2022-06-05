@@ -1,6 +1,6 @@
 package ru.maxima.demo.model;
 
-public enum Status {
+public enum EAction {
     TAKE,
     RETURN
 }

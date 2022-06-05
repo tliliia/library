@@ -10,7 +10,8 @@ import ru.maxima.demo.dto.AccountDto;
 import ru.maxima.demo.dto.EnrollmentDto;
 import ru.maxima.demo.dto.pagedDto.EnrollmentPage;
 import ru.maxima.demo.model.Account;
-import ru.maxima.demo.model.Status;
+import ru.maxima.demo.model.EAction;
+import ru.maxima.demo.model.EHistory;
 import ru.maxima.demo.model.Enrollment;
 import ru.maxima.demo.repository.AccountRepository;
 import ru.maxima.demo.repository.EnrollmentRepository;
@@ -19,14 +20,11 @@ import ru.maxima.demo.service.ProductService;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
-import java.util.TimeZone;
 
 @Service
 @RequiredArgsConstructor
 public class EnrollmentServiceImpl implements EnrollmentService {
-    public static final Calendar tzUTC = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
     private static final int DEFAULT_PAGE_SIZE = 5;
 
     private final EnrollmentRepository enrollmentRepository;
@@ -36,25 +34,38 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     @Override
     public void userTakeBook(Long accountId, Long bookId) {
         productService.reduceAvailableAmount(bookId);
-        Enrollment enrollment = Enrollment.builder()
-                .date(Instant.now())
-                .action(Status.TAKE)
-                .productId(bookId)
-                .accountId(accountId)
-                .build();
-        enrollmentRepository.save(enrollment);
+        Enrollment result = updateEnrollment(accountId, bookId, EAction.TAKE);
     }
 
     @Override
     public void userReturnBook(Long accountId, Long bookId) {
         productService.enlargeAvailableAmount(bookId);
-        Enrollment enrollment = Enrollment.builder()
-                .date(Instant.now())
-                .action(Status.RETURN)
-                .productId(bookId)
-                .accountId(accountId)
-                .build();
-        enrollmentRepository.save(enrollment);
+        Enrollment result = updateEnrollment(accountId, bookId, EAction.RETURN);
+    }
+
+    private synchronized Enrollment updateEnrollment(Long accountId, Long bookId, EAction action) {
+        Enrollment enrollment = enrollmentRepository.findOneByAccountIdAndProductId(accountId, bookId);
+        if (enrollment == null) {
+            enrollment = Enrollment.builder()
+                    .productId(bookId)
+                    .accountId(accountId)
+                    .history(new ArrayList<>())
+                    .build();
+        }
+        enrollment.setLastAction(action);
+        enrollment = enrollmentRepository.save(enrollment);//чтобы появился id
+        enrollment = updateHistory(enrollment);
+        return  enrollment;
+    }
+
+    private Enrollment updateHistory(Enrollment enrollment) {
+        enrollment.getHistory().add(
+                EHistory.builder()
+                        .relationId(enrollment.getId())
+                        .action(enrollment.getLastAction())
+                        .date(Instant.now())
+                        .build());
+        return enrollmentRepository.save(enrollment);
     }
 
     @Override
@@ -72,15 +83,14 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     @Override
-    public List<AccountDto> usersHoldingBook(Long productId) {
-        List<Account> result = accountRepository.getAccounstHoldingBook(productId);
+    public List<AccountDto> usersWhoTakeBook(Long productId) {
+        List<Account> result = accountRepository.getAccounstWhoTakeBook(productId);
         return AccountDto.fromList(result);
     }
 
     @Override
-    public List<EnrollmentDto> getMetrics(Instant startDate, Instant endDate) {
-//        return EnrollmentDto.fromList(enrollmentRepository.getAllByDateBetween(startDate, endDate));
-        return new ArrayList<>();
+    public List<EnrollmentDto> getHistoryByDateBetween(Instant startDate, Instant endDate) {
+        return EnrollmentDto.fromList(enrollmentRepository.getAllByDateBetween(startDate, endDate));
     }
 
     @Override

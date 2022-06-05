@@ -21,10 +21,10 @@ public interface EnrollmentService {
     EnrollmentPage getUserHistory(Long accountId, int page);
 
     //    получение списка посетителей, имеющих на руках конкретную книгу;
-    List<AccountDto> usersHoldingBook(Long productId);
+    List<AccountDto> usersWhoTakeBook(Long productId);
 
     //    возможность получить какую-либо статистику по книгам или посетителям за задаваемый в запросе промежуток времени;
-    List<EnrollmentDto> getMetrics(Instant startDate, Instant endDate);
+    List<EnrollmentDto> getHistoryByDateBetween(Instant startDate, Instant endDate);
 
     List<EnrollmentDto> getAllHistory();
 
